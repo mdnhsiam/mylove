@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 270 50% 5%;
+    --foreground: 0 0% 98%;
+    --card: 270 40% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 270 40% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 45 80% 50%;
+    --primary-foreground: 270 50% 5%;
+    --secondary: 270 40% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 270 30% 15%;
+    --muted-foreground: 270 20% 70%;
+    --accent: 280 50% 20%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 270 30% 20%;
+    --input: 270 30% 20%;
+    --ring: 45 80% 50%;
+    --radius: 0.75rem;
+  }
+
+  .light {
+    --background: 30 20% 98%;
+    --foreground: 270 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 270 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 40% 10%;
+    --primary: 45 80% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 20% 92%;
+    --secondary-foreground: 270 40% 10%;
+    --muted: 30 20% 90%;
+    --muted-foreground: 270 20% 45%;
+    --accent: 340 60% 70%;
+    --accent-foreground: 270 40% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 20% 85%;
+    --input: 30 20% 85%;
+    --ring: 45 80% 50%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .text-gold {
+    color: #d4af37;
+  }
+
+  .text-gold-light {
+    color: #ecc825;
+  }
+
+  .bg-gold {
+    background-color: #d4af37;
+  }
+
+  .bg-gold-light {
+    background-color: #ecc825;
+  }
+
+  .border-gold {
+    border-color: #d4af37;
+  }
+
+  .glassmorphism {
+    background: rgba(20, 10, 30, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+
+  .text-shadow-gold {
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.3);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fix flip cards — missing from Tailwind JIT by default */
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+  20%, 40%, 60%, 80% { transform: translateX(6px); }
+}
