@@ -19,9 +19,9 @@ interface MemoryItem {
 // PXL_YYYYMMDD_HHMMSSxxx and IMG-YYYYMMDD-WAxxxx patterns.
 const MEMORIES: MemoryItem[] = [
   { id: 1,  image: '/images/PXL_20250910_094816488.jpg', caption: 'The very beginning', date: '2025-09-10', dateLabel: '10 Sep 2025', rotation: -3, size: 'medium' },
-  { id: 2,  image: '/images/IMG-20250911-WA0066.jpg', caption: 'Our first hello', date: '2025-09-11', dateLabel: '11 Sep 2025', rotation: 2, size: 'small' },
-  { id: 3,  image: '/images/IMG-20250911-WA0084.jpg', caption: 'Getting to know you', date: '2025-09-11', dateLabel: '11 Sep 2025', rotation: -2, size: 'medium' },
-  { id: 4,  image: '/images/IMG-20250911-WA0089.jpg', caption: 'The day everything changed', date: '2025-09-11', dateLabel: '11 Sep 2025', rotation: 3, size: 'large' },
+  { id: 2,  image: '/images/IMG-20250911-WA0066.jpg', caption: 'Our first hello', date: '2025-09-10', dateLabel: '10 Sep 2025', rotation: 2, size: 'small' },
+  { id: 3,  image: '/images/IMG-20250911-WA0084.jpg', caption: 'Getting to know you', date: '2025-09-10', dateLabel: '10 Sep 2025', rotation: -2, size: 'medium' },
+  { id: 4,  image: '/images/IMG-20250911-WA0089.jpg', caption: 'The day everything changed', date: '2025-09-10', dateLabel: '10 Sep 2025', rotation: 3, size: 'large' },
   { id: 5,  image: '/images/PXL_20250926_150815839.jpg', caption: 'An ordinary beautiful day', date: '2025-09-26', dateLabel: '26 Sep 2025', rotation: -4, size: 'small' },
   { id: 6,  image: '/images/IMG-20250929-WA0038.jpg', caption: 'You, being wonderful', date: '2025-09-29', dateLabel: '29 Sep 2025', rotation: 1, size: 'large' },
   { id: 7,  image: '/images/PXL_20251005_120815533.jpg', caption: 'That golden afternoon', date: '2025-10-05', dateLabel: '5 Oct 2025', rotation: -1, size: 'medium' },

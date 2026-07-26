@@ -152,11 +152,7 @@ function GlowingRing() {
       >
         <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#0a0a1a] to-[#1a0b2e] flex items-center justify-center overflow-hidden">
           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-            <img
-              src="/images/image.png"
-              alt="Our ring"
-              className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]"
-            />
+            <Gem className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 text-gold drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]" />
           </motion.div>
         </div>
       </motion.div>
