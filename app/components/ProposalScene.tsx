@@ -12,7 +12,8 @@ function seededRand(n: number) {
 }
 
 const BEGGING_MESSAGES = [
-  "You can't do this to me! I have a heart you know!",
+  "I'll share my fries with you! That is the ULTIMATE sacrifice!",
+  "You're the biryani to my rice! The chai to my samosa!",
   "Please be mine! I promise I'll make you chai every morning!",
   "My heart is literally breaking into a million pieces right now!",
   "Think about our future! Cute babies, matching kurtas, everything!",
@@ -35,27 +36,23 @@ const BEGGING_MESSAGES = [
   "Our future kids are already demanding siblings! Don't disappoint them!",
   "I've already saved your name as 'My Queen' in my phone!",
   "You're the only one who laughs at my terrible puns! That's marriage material!",
-  "I'll share my fries with you! That is the ULTIMATE sacrifice!",
   "I have a 10-year plan and you are in literally every single year!",
   "Without you, I'm just a guy with a website and no bride!",
   "Unlimited forehead kisses. That's my offer. Final!",
   "I'll never forget anniversaries! I set 47 reminders!",
-  "You're the biryani to my rice! The chai to my samosa!",
   "I'll wake up at 3 AM to talk to you when you can't sleep!",
-  "The YES buttons are getting bigger... the universe is trying to tell you something!",
   "Fine, be that way... *begins ugly crying in a corner*",
 ];
 
-// Headline messages that grow in intensity as she keeps dodging
 const DODGE_HEADLINES = [
   { title: "Wait... really?", sub: "I promise I'm worth it. Ask anyone. Even my cat." },
   { title: "Ouch. My heart.", sub: "That one actually hurt. But I forgive you. Because I'm in love." },
-  { title: "Still no?!", sub: "I have 47 backup proposals ready. This is just #1." },
-  { title: "Okay you're just being stubborn now", sub: "Admit it — you're enjoying watching me beg." },
   { title: "The YES buttons are literally GROWING", sub: "Science can't explain this. Love can." },
+  { title: "Okay you're just being stubborn now", sub: "Admit it — you're enjoying watching me beg." },
   { title: "I will NOT give up", sub: "I have snacks. I have time. I have forever." },
   { title: "Even the No button is shrinking", sub: "It's embarrassed to exist at this point." },
   { title: "Last chance to say yes nicely", sub: "After this I'm sending the flash mob." },
+  { title: "Please? Pretty please?", sub: "I'm running out of clever lines. Just say yes." },
 ];
 
 function FireflyField() {
@@ -153,14 +150,16 @@ function GlowingRing() {
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         style={{ boxShadow: '0 0 60px rgba(212, 175, 55, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.3)' }}
       >
-        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#0a0a1a] to-[#1a0b2e] flex items-center justify-center">
+        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#0a0a1a] to-[#1a0b2e] flex items-center justify-center overflow-hidden">
           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-            <Gem size={36} className="text-gold sm:hidden" />
-            <Sparkles size={48} className="text-gold hidden sm:block" />
+            <img
+              src="/images/image.png"
+              alt="Our ring"
+              className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]"
+            />
           </motion.div>
         </div>
       </motion.div>
-      {/* Diamond top */}
       <motion.div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2"
         animate={{ scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }}
@@ -168,7 +167,6 @@ function GlowingRing() {
       >
         <div className="w-4 h-4 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
       </motion.div>
-      {/* Orbiting particles */}
       {orbs.map((orb, i) => (
         <motion.div
           key={i}
@@ -194,9 +192,7 @@ export default function ProposalScene() {
   const [heartsBurst, setHeartsBurst] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const dodgeCountRef = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Detect mobile for touch-friendly dodge behavior
   useEffect(() => {
     const check = () => setIsMobile(window.matchMedia('(max-width: 768px)').matches);
     check();
@@ -232,42 +228,37 @@ export default function ProposalScene() {
   }, [play, triggerFireworks]);
 
   const handleNoDodge = useCallback(() => {
-    const container = containerRef.current;
-    if (!container || !noButtonVisible) return;
+    if (!noButtonVisible) return;
 
     const newCount = dodgeCountRef.current + 1;
     dodgeCountRef.current = newCount;
     setDodgeCount(newCount);
 
-    // Compute safe random position relative to container, tighter on mobile
-    const rect = container.getBoundingClientRect();
-    const maxOffsetX = Math.min(rect.width * (isMobile ? 0.28 : 0.35), isMobile ? 120 : 200);
-    const maxOffsetY = Math.min(rect.height * 0.2, 100);
+    // Roam the whole viewport — fixed positioning coordinates
+    const margin = isMobile ? 60 : 100;
+    const maxX = window.innerWidth / 2 - margin;
+    const maxY = window.innerHeight / 2 - margin;
     const angle = seededRand(newCount * 7) * Math.PI * 2;
-    const radius = (isMobile ? 60 : 80) + seededRand(newCount * 11) * (isMobile ? 50 : 80);
+    const radius = Math.min(maxX, maxY) * (0.4 + seededRand(newCount * 11) * 0.5);
     const nx = Math.cos(angle) * radius;
-    const ny = Math.sin(angle) * (maxOffsetY / Math.max(maxOffsetX, 1)) * radius;
+    const ny = Math.sin(angle) * radius;
     setNoButtonPos({
-      x: Math.max(-maxOffsetX, Math.min(maxOffsetX, nx)),
-      y: Math.max(-maxOffsetY, Math.min(maxOffsetY, ny)),
+      x: Math.max(-maxX, Math.min(maxX, nx)),
+      y: Math.max(-maxY, Math.min(maxY, ny)),
     });
 
-    // Grow YES buttons faster on mobile so they dominate sooner
     const growStep = isMobile ? 0.06 : 0.04;
     setYesScale((s) => Math.min(s + growStep, 1.5));
     setYesGlow((g) => Math.min(g + 8, 80));
 
-    // Show sad face
     setShowSadFace(true);
     setTimeout(() => setShowSadFace(false), 600);
 
-    // Toast from 3rd dodge
-    if (newCount >= 3) {
+    if (newCount >= 2) {
       const msg = BEGGING_MESSAGES[newCount % BEGGING_MESSAGES.length];
       toast(msg, { duration: 3500, icon: '😢' });
     }
 
-    // Shrink No button sooner on mobile
     const shrinkThreshold = isMobile ? 4 : 5;
     if (newCount >= shrinkThreshold) {
       setNoButtonScale((s) => Math.max(s - 0.18, 0.01));
@@ -277,7 +268,6 @@ export default function ProposalScene() {
     }
   }, [noButtonVisible, isMobile]);
 
-  // Stable hearts for Yes celebration
   const yesHearts = useMemo(() =>
     Array.from({ length: 25 }, (_, i) => ({
       id: i,
@@ -296,7 +286,7 @@ export default function ProposalScene() {
       <FireflyField />
       <FloatingLanterns />
 
-      <div ref={containerRef} className="relative z-10 text-center px-4 w-full max-w-4xl">
+      <div className="relative z-10 text-center px-4 w-full max-w-4xl">
         <AnimatePresence mode="wait">
           {!saidYes ? (
             <motion.div
@@ -349,7 +339,6 @@ export default function ProposalScene() {
                 </div>
               </motion.div>
 
-              {/* Dynamic dodge headline — appears after first dodge */}
               <AnimatePresence>
                 {dodgeCount > 0 && (
                   <motion.div
@@ -383,7 +372,6 @@ export default function ProposalScene() {
                   Will You Marry Me?
                 </motion.h3>
 
-                {/* Buttons — stack on mobile, row on desktop */}
                 <div className="relative flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 py-6 sm:py-8 px-2 min-h-[120px] sm:min-h-[100px] w-full max-w-xl">
                   <motion.button
                     onClick={handleYes}
@@ -423,43 +411,7 @@ export default function ProposalScene() {
                     <span>ABSOLUTELY YES</span>
                     <Heart size={18} className="fill-current flex-shrink-0" />
                   </motion.button>
-
-                  {/* No button — constrained escape using Framer translate */}
-                  <AnimatePresence>
-                    {noButtonVisible && (
-                      <motion.button
-                        onClick={handleNoDodge}
-                        onMouseEnter={isMobile ? undefined : handleNoDodge}
-                        onTouchStart={isMobile ? handleNoDodge : undefined}
-                        className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/10 border border-white/20 text-white/60 font-display text-xs sm:text-sm hover:bg-white/20 transition-colors cursor-not-allowed flex-shrink-0 self-center"
-                        animate={{
-                          x: noButtonPos.x,
-                          y: noButtonPos.y,
-                          scale: noButtonScale,
-                          opacity: noButtonScale < 0.3 ? noButtonScale * 3 : 1,
-                        }}
-                        exit={{ opacity: 0, scale: 0, transition: { duration: 0.3 } }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                      >
-                        {dodgeCount >= 5 ? "Please don't..." : dodgeCount >= 3 ? "Ugh fine, but..." : "No..."}
-                      </motion.button>
-                    )}
-                  </AnimatePresence>
                 </div>
-
-                {/* Sad face */}
-                <AnimatePresence>
-                  {showSadFace && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="text-3xl sm:text-4xl"
-                    >
-                      &#128557;
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {dodgeCount > 0 && (
                   <motion.p
@@ -493,7 +445,7 @@ export default function ProposalScene() {
             >
               <motion.div
                 className="mb-6 sm:mb-8"
-                animate={{ scale: [1, 1.2, 1] }}
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-gold-400 to-gold-300 flex items-center justify-center mx-auto shadow-[0_0_60px_rgba(212,175,55,0.5)]">
@@ -580,7 +532,46 @@ export default function ProposalScene() {
         </AnimatePresence>
       </div>
 
-      {/* Floating hearts burst — outside container, properly in AnimatePresence */}
+      {/* No button — fixed, roams the whole screen */}
+      <AnimatePresence>
+        {noButtonVisible && !saidYes && (
+          <motion.button
+            onClick={handleNoDodge}
+            onMouseEnter={isMobile ? undefined : handleNoDodge}
+            onTouchStart={isMobile ? handleNoDodge : undefined}
+            className="fixed top-1/2 left-1/2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/10 border border-white/20 text-white/60 font-display text-xs sm:text-sm hover:bg-white/20 transition-colors cursor-not-allowed flex-shrink-0 backdrop-blur-sm"
+            style={{ zIndex: 70 }}
+            animate={{
+              x: noButtonPos.x,
+              y: noButtonPos.y,
+              scale: noButtonScale,
+              opacity: noButtonScale < 0.3 ? noButtonScale * 3 : 1,
+            }}
+            initial={{ x: 0, y: 0, opacity: 0 }}
+            exit={{ opacity: 0, scale: 0, transition: { duration: 0.3 } }}
+            transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          >
+            {dodgeCount >= 5 ? "Please don't..." : dodgeCount >= 3 ? "Ugh fine, but..." : "No..."}
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Sad face */}
+      <AnimatePresence>
+        {showSadFace && !saidYes && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
+            style={{ zIndex: 70 }}
+          >
+            &#128557;
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating hearts burst */}
       <AnimatePresence>
         {heartsBurst && (
           <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 60 }}>
