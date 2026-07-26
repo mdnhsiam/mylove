@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Star, Crown, ArrowUp } from 'lucide-react';
+import { Heart, Sparkles, Star, Crown, ArrowUp, Diamond, Infinity as InfinityIcon, Gem } from 'lucide-react';
 import { useAudio } from '../context/AudioContext';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
@@ -44,6 +44,18 @@ const BEGGING_MESSAGES = [
   "I'll wake up at 3 AM to talk to you when you can't sleep!",
   "The YES buttons are getting bigger... the universe is trying to tell you something!",
   "Fine, be that way... *begins ugly crying in a corner*",
+];
+
+// Headline messages that grow in intensity as she keeps dodging
+const DODGE_HEADLINES = [
+  { title: "Wait... really?", sub: "I promise I'm worth it. Ask anyone. Even my cat." },
+  { title: "Ouch. My heart.", sub: "That one actually hurt. But I forgive you. Because I'm in love." },
+  { title: "Still no?!", sub: "I have 47 backup proposals ready. This is just #1." },
+  { title: "Okay you're just being stubborn now", sub: "Admit it — you're enjoying watching me beg." },
+  { title: "The YES buttons are literally GROWING", sub: "Science can't explain this. Love can." },
+  { title: "I will NOT give up", sub: "I have snacks. I have time. I have forever." },
+  { title: "Even the No button is shrinking", sub: "It's embarrassed to exist at this point." },
+  { title: "Last chance to say yes nicely", sub: "After this I'm sending the flash mob." },
 ];
 
 function FireflyField() {
@@ -129,7 +141,7 @@ function GlowingRing() {
   );
 
   return (
-    <div className="relative w-48 h-48 md:w-64 md:h-64 mx-auto">
+    <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-64 md:h-64 mx-auto">
       <motion.div
         className="absolute inset-0 rounded-full border-2 border-gold/30"
         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -143,7 +155,8 @@ function GlowingRing() {
       >
         <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#0a0a1a] to-[#1a0b2e] flex items-center justify-center">
           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-            <Sparkles size={48} className="text-gold" />
+            <Gem size={36} className="text-gold sm:hidden" />
+            <Sparkles size={48} className="text-gold hidden sm:block" />
           </motion.div>
         </div>
       </motion.div>
@@ -179,8 +192,17 @@ export default function ProposalScene() {
   const [dodgeCount, setDodgeCount] = useState(0);
   const [showSadFace, setShowSadFace] = useState(false);
   const [heartsBurst, setHeartsBurst] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dodgeCountRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile for touch-friendly dodge behavior
+  useEffect(() => {
+    const check = () => setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const triggerFireworks = useCallback(() => {
     const fire = (origin: { x: number; y: number }) =>
@@ -217,18 +239,22 @@ export default function ProposalScene() {
     dodgeCountRef.current = newCount;
     setDodgeCount(newCount);
 
-    // Compute safe random position relative to container
+    // Compute safe random position relative to container, tighter on mobile
     const rect = container.getBoundingClientRect();
-    const maxOffsetX = Math.min(rect.width * 0.35, 200);
-    const maxOffsetY = Math.min(rect.height * 0.25, 120);
+    const maxOffsetX = Math.min(rect.width * (isMobile ? 0.28 : 0.35), isMobile ? 120 : 200);
+    const maxOffsetY = Math.min(rect.height * 0.2, 100);
     const angle = seededRand(newCount * 7) * Math.PI * 2;
-    const radius = 80 + seededRand(newCount * 11) * 80;
+    const radius = (isMobile ? 60 : 80) + seededRand(newCount * 11) * (isMobile ? 50 : 80);
     const nx = Math.cos(angle) * radius;
-    const ny = Math.sin(angle) * (maxOffsetY / maxOffsetX) * radius;
-    setNoButtonPos({ x: Math.max(-maxOffsetX, Math.min(maxOffsetX, nx)), y: Math.max(-maxOffsetY, Math.min(maxOffsetY, ny)) });
+    const ny = Math.sin(angle) * (maxOffsetY / Math.max(maxOffsetX, 1)) * radius;
+    setNoButtonPos({
+      x: Math.max(-maxOffsetX, Math.min(maxOffsetX, nx)),
+      y: Math.max(-maxOffsetY, Math.min(maxOffsetY, ny)),
+    });
 
-    // Grow YES buttons
-    setYesScale((s) => Math.min(s + 0.04, 1.5));
+    // Grow YES buttons faster on mobile so they dominate sooner
+    const growStep = isMobile ? 0.06 : 0.04;
+    setYesScale((s) => Math.min(s + growStep, 1.5));
     setYesGlow((g) => Math.min(g + 8, 80));
 
     // Show sad face
@@ -241,14 +267,15 @@ export default function ProposalScene() {
       toast(msg, { duration: 3500, icon: '😢' });
     }
 
-    // Shrink No button
-    if (newCount >= 5) {
+    // Shrink No button sooner on mobile
+    const shrinkThreshold = isMobile ? 4 : 5;
+    if (newCount >= shrinkThreshold) {
       setNoButtonScale((s) => Math.max(s - 0.18, 0.01));
     }
     if (newCount >= 8) {
       setTimeout(() => setNoButtonVisible(false), 400);
     }
-  }, [noButtonVisible]);
+  }, [noButtonVisible, isMobile]);
 
   // Stable hearts for Yes celebration
   const yesHearts = useMemo(() =>
@@ -261,8 +288,10 @@ export default function ProposalScene() {
     })), []
   );
 
+  const currentHeadline = DODGE_HEADLINES[Math.min(dodgeCount - 1, DODGE_HEADLINES.length - 1)];
+
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-10 pb-32">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-16 pb-32">
       <div className="absolute inset-0 bg-gradient-to-b from-[#050510] via-[#0a0a1a] to-[#1a0b2e]" />
       <FireflyField />
       <FloatingLanterns />
@@ -281,16 +310,17 @@ export default function ProposalScene() {
                 initial={{ opacity: 0, y: -30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8 }}
-                className="mb-6"
+                className="mb-4 sm:mb-6"
               >
-                <Crown size={40} className="text-gold mx-auto" />
+                <Crown size={36} className="text-gold mx-auto sm:hidden" />
+                <Crown size={40} className="text-gold mx-auto hidden sm:block" />
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 1 }}
-                className="mb-10"
+                className="mb-8 sm:mb-10"
               >
                 <GlowingRing />
               </motion.div>
@@ -299,23 +329,45 @@ export default function ProposalScene() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.8 }}
-                className="mb-10"
+                className="mb-8 sm:mb-10"
               >
-                <p className="font-display text-white/70 text-lg md:text-xl mb-4 tracking-wide">
+                <p className="font-display text-white/70 text-base sm:text-lg md:text-xl mb-3 sm:mb-4 tracking-wide">
                   Out of billions of people...
                 </p>
-                <h2 className="font-handwritten text-4xl md:text-6xl text-gold text-shadow-gold mb-4">
+                <h2 className="font-handwritten text-3xl sm:text-4xl md:text-6xl text-gold text-shadow-gold mb-3 sm:mb-4 leading-tight">
                   I found my forever in you
                 </h2>
-                <p className="font-display text-white/50 text-base md:text-lg italic max-w-2xl mx-auto">
+                <p className="font-display text-white/50 text-sm sm:text-base md:text-lg italic max-w-2xl mx-auto px-2">
                   Every moment with you has been a gift. Now I want to give you the rest of my life.
                 </p>
-                <div className="mt-6 flex items-center justify-center gap-2 text-rose-400">
-                  <Star size={16} fill="currentColor" />
-                  <span className="font-handwritten text-xl">You are the most special person in the world</span>
-                  <Star size={16} fill="currentColor" />
+                <div className="mt-4 sm:mt-6 flex items-center justify-center gap-2 text-rose-400">
+                  <Star size={14} fill="currentColor" className="flex-shrink-0" />
+                  <span className="font-handwritten text-base sm:text-xl text-center">
+                    You are the most special person in the world
+                  </span>
+                  <Star size={14} fill="currentColor" className="flex-shrink-0" />
                 </div>
               </motion.div>
+
+              {/* Dynamic dodge headline — appears after first dodge */}
+              <AnimatePresence>
+                {dodgeCount > 0 && (
+                  <motion.div
+                    key={`headline-${dodgeCount}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4 sm:mb-6 px-4"
+                  >
+                    <h3 className="font-handwritten text-2xl sm:text-3xl text-rose-300 mb-1">
+                      {currentHeadline.title}
+                    </h3>
+                    <p className="font-display text-white/60 text-sm sm:text-base italic">
+                      {currentHeadline.sub}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -324,18 +376,18 @@ export default function ProposalScene() {
                 className="flex flex-col items-center gap-4"
               >
                 <motion.h3
-                  className="font-handwritten text-3xl md:text-4xl text-white mb-6"
+                  className="font-handwritten text-2xl sm:text-3xl md:text-4xl text-white mb-4 sm:mb-6 text-center px-4"
                   animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
                   Will You Marry Me?
                 </motion.h3>
 
-                {/* Buttons row — contained in a relative div with overflow visible */}
-                <div className="relative flex flex-wrap justify-center gap-4 py-8 px-4 min-h-[100px] w-full max-w-xl">
+                {/* Buttons — stack on mobile, row on desktop */}
+                <div className="relative flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 py-6 sm:py-8 px-2 min-h-[120px] sm:min-h-[100px] w-full max-w-xl">
                   <motion.button
                     onClick={handleYes}
-                    className="relative group px-8 py-4 rounded-full bg-gradient-to-r from-gold-500 via-gold-300 to-gold-500 text-[#1a0b2e] font-display text-lg font-semibold tracking-wider flex items-center gap-2 overflow-hidden"
+                    className="relative group px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-gold-500 via-gold-300 to-gold-500 text-[#1a0b2e] font-display text-base sm:text-lg font-semibold tracking-wider flex items-center gap-2 overflow-hidden w-full sm:w-auto justify-center"
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     animate={{
@@ -349,13 +401,13 @@ export default function ProposalScene() {
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <span className="relative z-10">YES</span>
-                    <Heart size={18} className="fill-current" />
+                    <Heart size={18} className="fill-current flex-shrink-0" />
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </motion.button>
 
                   <motion.button
                     onClick={handleYes}
-                    className="relative px-8 py-4 rounded-full bg-gradient-to-r from-rose-600 via-rose-400 to-rose-600 text-white font-display text-lg font-semibold tracking-wider flex items-center gap-2"
+                    className="relative px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-rose-600 via-rose-400 to-rose-600 text-white font-display text-base sm:text-lg font-semibold tracking-wider flex items-center gap-2 w-full sm:w-auto justify-center"
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     animate={{
@@ -369,16 +421,17 @@ export default function ProposalScene() {
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <span>ABSOLUTELY YES</span>
-                    <Heart size={18} className="fill-current" />
+                    <Heart size={18} className="fill-current flex-shrink-0" />
                   </motion.button>
 
-                  {/* No button — constrained escape using Framer translate, not absolute position */}
+                  {/* No button — constrained escape using Framer translate */}
                   <AnimatePresence>
                     {noButtonVisible && (
                       <motion.button
                         onClick={handleNoDodge}
-                        onMouseEnter={handleNoDodge}
-                        className="px-6 py-3 rounded-full bg-white/10 border border-white/20 text-white/60 font-display text-sm hover:bg-white/20 transition-colors cursor-not-allowed flex-shrink-0"
+                        onMouseEnter={isMobile ? undefined : handleNoDodge}
+                        onTouchStart={isMobile ? handleNoDodge : undefined}
+                        className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/10 border border-white/20 text-white/60 font-display text-xs sm:text-sm hover:bg-white/20 transition-colors cursor-not-allowed flex-shrink-0 self-center"
                         animate={{
                           x: noButtonPos.x,
                           y: noButtonPos.y,
@@ -401,7 +454,7 @@ export default function ProposalScene() {
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      className="text-4xl"
+                      className="text-3xl sm:text-4xl"
                     >
                       &#128557;
                     </motion.div>
@@ -412,7 +465,7 @@ export default function ProposalScene() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-white/40 text-sm font-display"
+                    className="text-white/40 text-xs sm:text-sm font-display text-center px-4"
                   >
                     Dodge #{dodgeCount}... but I will keep loving you forever
                   </motion.p>
@@ -422,9 +475,9 @@ export default function ProposalScene() {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex items-center gap-2 text-gold/60 text-sm font-display"
+                    className="flex items-center justify-center gap-2 text-gold/60 text-xs sm:text-sm font-display text-center px-4"
                   >
-                    <ArrowUp size={14} />
+                    <ArrowUp size={14} className="flex-shrink-0" />
                     <span>The YES buttons are getting bigger... the universe is voting!</span>
                   </motion.div>
                 )}
@@ -436,20 +489,21 @@ export default function ProposalScene() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, ease: 'easeOut' }}
-              className="text-center"
+              className="text-center px-2"
             >
               <motion.div
-                className="mb-8"
+                className="mb-6 sm:mb-8"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-gold-400 to-gold-300 flex items-center justify-center mx-auto shadow-[0_0_60px_rgba(212,175,55,0.5)]">
-                  <Heart size={56} className="text-[#1a0b2e] fill-current" />
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-gold-400 to-gold-300 flex items-center justify-center mx-auto shadow-[0_0_60px_rgba(212,175,55,0.5)]">
+                  <Heart size={40} className="text-[#1a0b2e] fill-current sm:hidden" />
+                  <Heart size={56} className="text-[#1a0b2e] fill-current hidden sm:block" />
                 </div>
               </motion.div>
 
               <motion.h2
-                className="font-handwritten text-5xl md:text-7xl text-gold text-shadow-gold mb-6"
+                className="font-handwritten text-4xl sm:text-5xl md:text-7xl text-gold text-shadow-gold mb-4 sm:mb-6 leading-tight"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -458,7 +512,7 @@ export default function ProposalScene() {
               </motion.h2>
 
               <motion.p
-                className="font-display text-2xl md:text-3xl text-white mb-4"
+                className="font-display text-xl sm:text-2xl md:text-3xl text-white mb-3 sm:mb-4 px-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
@@ -467,7 +521,7 @@ export default function ProposalScene() {
               </motion.p>
 
               <motion.p
-                className="font-display text-white/60 text-lg"
+                className="font-display text-white/60 text-base sm:text-lg px-2 max-w-2xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
@@ -476,26 +530,49 @@ export default function ProposalScene() {
               </motion.p>
 
               <motion.div
-                className="mt-8 flex justify-center gap-4 text-3xl"
+                className="mt-6 sm:mt-8 flex justify-center gap-3 sm:gap-4 text-2xl sm:text-3xl"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
               >
-                <Heart size={32} className="text-rose-400 fill-rose-400" />
-                <Heart size={32} className="text-gold fill-gold" />
-                <Heart size={32} className="text-rose-400 fill-rose-400" />
+                <Heart size={28} className="text-rose-400 fill-rose-400 sm:hidden" />
+                <Heart size={32} className="text-rose-400 fill-rose-400 hidden sm:block" />
+                <Heart size={28} className="text-gold fill-gold sm:hidden" />
+                <Heart size={32} className="text-gold fill-gold hidden sm:block" />
+                <Heart size={28} className="text-rose-400 fill-rose-400 sm:hidden" />
+                <Heart size={32} className="text-rose-400 fill-rose-400 hidden sm:block" />
               </motion.div>
 
               <motion.div
-                className="mt-8"
+                className="mt-6 sm:mt-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5 }}
               >
-                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full glassmorphism border border-gold/20">
-                  <Star size={16} className="text-gold fill-gold" />
-                  <span className="font-handwritten text-gold text-xl">Our forever begins now</span>
-                  <Star size={16} className="text-gold fill-gold" />
+                <div className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full glassmorphism border border-gold/20">
+                  <Star size={14} className="text-gold fill-gold flex-shrink-0 sm:hidden" />
+                  <Star size={16} className="text-gold fill-gold flex-shrink-0 hidden sm:block" />
+                  <span className="font-handwritten text-gold text-lg sm:text-xl">Our forever begins now</span>
+                  <Star size={14} className="text-gold fill-gold flex-shrink-0 sm:hidden" />
+                  <Star size={16} className="text-gold fill-gold flex-shrink-0 hidden sm:block" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="mt-8 sm:mt-10 flex flex-col items-center gap-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+              >
+                <div className="flex items-center gap-2 text-white/40 font-display text-xs sm:text-sm">
+                  <InfinityIcon size={14} className="text-gold/60" />
+                  <span>From this moment, until the end of time</span>
+                  <InfinityIcon size={14} className="text-gold/60" />
+                </div>
+                <div className="flex items-center gap-2 text-white/30 font-display text-[10px] sm:text-xs">
+                  <Diamond size={12} className="text-gold/40" />
+                  <span>Made with infinite love, just for you</span>
+                  <Diamond size={12} className="text-gold/40" />
                 </div>
               </motion.div>
             </motion.div>
