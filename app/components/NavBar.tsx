@@ -1,9 +1,11 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Images, Heart, Eye, Pen, MapPin, Clock, Diamond, Home, Lock, Sparkles } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const PAGES = [
   { path: '/', label: 'Home', icon: Home },
@@ -17,10 +19,24 @@ const PAGES = [
   { path: '/proposal', label: 'Proposal', icon: Diamond },
 ];
 
+const LOCKED_PATHS = ['/gallery', '/reasons', '/secret', '/letter', '/dreams', '/countdown', '/proposal'];
+
 export default function NavBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { unlocked } = useApp();
   const currentIndex = PAGES.findIndex(p => p.path === pathname);
   const progressPct = currentIndex >= 0 ? ((currentIndex + 1) / PAGES.length) * 100 : 0;
+
+  // Kick out anyone who lands on a locked page without unlocking first
+  useEffect(() => {
+    if (!unlocked && LOCKED_PATHS.includes(pathname)) {
+      router.replace('/lock');
+    }
+  }, [unlocked, pathname, router]);
+
+  // Hide the nav entirely on the lock screen and until unlocked
+  if (pathname === '/lock' || !unlocked) return null;
 
   return (
     <>
