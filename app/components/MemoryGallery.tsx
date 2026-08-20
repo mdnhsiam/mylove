@@ -33,6 +33,11 @@ const MEMORIES: MemoryItem[] = [
   { id: 13, image: '/images/IMG-20251123-WA0074.jpg', caption: 'My happy place', date: '2025-11-23', dateLabel: '23 Nov 2025', rotation: -1, size: 'small' },
   { id: 14, image: '/images/IMG-20251217-WA0062.jpg', caption: 'Growing closer every day', date: '2025-12-17', dateLabel: '17 Dec 2025', rotation: 2, size: 'large' },
   { id: 15, image: '/images/Messenger_creation_AF3B74A6-DD4C-4A03-8EA8-E31F4A2886F5.jpeg', caption: 'A memory I will always treasure', date: '2025-12-31', dateLabel: 'A treasured moment', rotation: -3, size: 'medium' },
+  { id: 16, image: '/images/20260801_160329.jpg', caption: 'A new chapter begins', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 2, size: 'medium' },
+  { id: 17, image: '/images/20260801_161022.jpg', caption: 'Every moment with you is magic', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: -2, size: 'large' },
+  { id: 18, image: '/images/20260801_161519.jpg', caption: 'You are my sunshine', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 3, size: 'small' },
+  { id: 19, image: '/images/20260801_162251.jpg', caption: 'Forever and always', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: -1, size: 'medium' },
+  { id: 20, image: '/images/20260801_164944.jpg', caption: 'My heart is yours, completely', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 2, size: 'large' },
 ];
 
 function getSizeClass(size: string) {
