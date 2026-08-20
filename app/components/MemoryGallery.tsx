@@ -38,6 +38,8 @@ const MEMORIES: MemoryItem[] = [
   { id: 18, image: '/images/20260801_161519.jpg', caption: 'You are my sunshine', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 3, size: 'small' },
   { id: 19, image: '/images/20260801_162251.jpg', caption: 'Forever and always', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: -1, size: 'medium' },
   { id: 20, image: '/images/20260801_164944.jpg', caption: 'My heart is yours, completely', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 2, size: 'large' },
+  { id: 21, image: '/images/image.png', caption: 'A moment worth a thousand words', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: -2, size: 'medium' },
+  { id: 22, image: '/images/image copy.png', caption: 'The one I want to spend forever with', date: '2026-08-01', dateLabel: '1 Aug 2026', rotation: 3, size: 'large' },
 ];
 
 function getSizeClass(size: string) {
